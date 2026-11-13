@@ -102,6 +102,8 @@ function applySharedWorld(world){
 
 const remotePlayers=new Map();
 let onlineSocket=null,onlineLastSend=0,onlinePlayerId=null,onlineAuthMode='login',onlineAuthToken=null,onlineAuthenticated=false;
+// Préremplit l'adresse WebSocket lorsque le jeu est servi par le serveur multijoueur.
+const onlineUrlField=document.getElementById('onlineUrl');if(onlineUrlField&&location.host){onlineUrlField.value=(location.protocol==='https:'?'wss://':'ws://')+location.host;}
 function onlineStatus(t){const el=document.getElementById('onlineStatus');if(el)el.textContent=t;}
 function makeRemotePlayer(id,name){
  const g=new THREE.Group();

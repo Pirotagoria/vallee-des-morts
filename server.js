@@ -62,8 +62,17 @@ function damageEnemies(region,p,m,spell){
  broadcastWorld(region);
 }
 const server=http.createServer((req,res)=>{
- if(req.url==='/health'){res.writeHead(200,{'content-type':'application/json'});return res.end(JSON.stringify({ok:true,players:players.size,rooms:rooms.size}));}
- res.writeHead(200,{'content-type':'text/plain; charset=utf-8'});res.end('La Vallée des Morts - serveur multijoueur actif');
+ const pathname=(req.url||'/').split('?')[0];
+ if(pathname==='/health'){res.writeHead(200,{'content-type':'application/json; charset=utf-8'});return res.end(JSON.stringify({ok:true,players:players.size,rooms:rooms.size}));}
+ if(pathname==='/'||pathname==='/index.html'||pathname==='/game'){
+  const gameFile=path.join(__dirname,'vallee_des_morts_v20.html');
+  fs.readFile(gameFile,(err,data)=>{
+   if(err){res.writeHead(500,{'content-type':'text/plain; charset=utf-8'});return res.end('Le fichier du jeu est introuvable.');}
+   res.writeHead(200,{'content-type':'text/html; charset=utf-8','cache-control':'no-cache'});res.end(data);
+  });
+  return;
+ }
+ res.writeHead(404,{'content-type':'text/plain; charset=utf-8'});res.end('Page introuvable');
 });
 const wss=new WebSocket.Server({server});
 wss.on('connection',ws=>{

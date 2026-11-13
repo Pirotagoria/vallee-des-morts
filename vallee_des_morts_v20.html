@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>La Vallée des Morts — Monde étendu</title>
+<style>
+:root{--gold:#f4c76a;--panel:rgba(10,15,29,.88);--line:rgba(244,199,106,.32);--text:#f4f0e8;--muted:#aeb8ca}*{box-sizing:border-box}body{margin:0;background:#070b16;color:var(--text);font-family:system-ui,Segoe UI,sans-serif;overflow:hidden;overscroll-behavior:none;touch-action:none}#game{position:fixed;inset:0}canvas{display:block}#hud{position:fixed;inset:0;pointer-events:none;padding:16px;display:flex;flex-direction:column;justify-content:space-between}.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.brand,.stats,.panel,.bottom button,.modal{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(10px);box-shadow:0 8px 30px #0006}.brand{padding:10px 14px;border-radius:14px}.brand b{color:var(--gold);letter-spacing:1.5px}.brand small{display:block;color:var(--muted)}.stats{padding:10px 14px;border-radius:14px;display:flex;gap:15px;flex-wrap:wrap;font-size:14px}.stats span{white-space:nowrap}.stats strong{color:var(--gold)}.bottom{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;pointer-events:auto}.bottom button,.action{color:var(--text);padding:11px 15px;border-radius:12px;border:1px solid var(--line);background:linear-gradient(180deg,#26324b,#111a2c);font-weight:700;cursor:pointer}.bottom button:hover,.action:hover{border-color:var(--gold);transform:translateY(-1px)}#hint{position:fixed;left:50%;bottom:82px;transform:translateX(-50%);background:#070b16cc;border:1px solid #ffffff22;padding:8px 14px;border-radius:20px;color:#dbe4f3;font-size:13px;pointer-events:none;text-align:center;max-width:90vw}.bar{height:8px;background:#273148;border-radius:20px;overflow:hidden;margin-top:5px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#d44d59,#ffb06b);width:100%}.modal{display:none;position:fixed;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,92vw);max-height:80vh;overflow:auto;border-radius:18px;padding:20px}.modal h2{margin:0 0 5px;color:var(--gold)}.modal p{color:var(--muted);margin:5px 0 15px}.close{float:right;background:none;border:0;color:#fff;font-size:24px;cursor:pointer}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}.card{border:1px solid #ffffff20;background:#172238;border-radius:12px;padding:12px}.card b{display:block;color:var(--gold);margin-bottom:5px}.card small{color:var(--muted);display:block;min-height:34px}.card button{margin-top:9px;width:100%;padding:8px;background:#725326;color:white;border:0;border-radius:8px;cursor:pointer;font-weight:700}.card button:disabled{opacity:.4;cursor:not-allowed}#toast{position:fixed;top:90px;left:50%;transform:translateX(-50%);background:#15243a;border:1px solid var(--line);padding:10px 16px;border-radius:12px;display:none;z-index:9}#bossbar{position:fixed;top:92px;left:50%;transform:translateX(-50%);width:min(420px,75vw);display:none;text-align:center;color:#fff;font-weight:800;text-shadow:0 2px 4px #000}#bossbar .bar i{background:linear-gradient(90deg,#8e1e36,#ff526b)}#mobile{display:none;position:fixed;bottom:105px;left:12px;pointer-events:auto;z-index:4;touch-action:none;user-select:none;-webkit-user-select:none}#mobile button{width:54px;height:54px;border-radius:50%;background:rgba(23,34,56,.88);border:2px solid var(--line);color:white;font-size:25px;font-weight:800;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 4px 14px #0008}#mobile button:active{background:#725326;transform:scale(.96)}#mobile:before{content:"DÉPLACEMENT";position:absolute;left:0;bottom:202px;color:#fff;background:#070b16bb;border:1px solid #ffffff33;border-radius:10px;padding:5px 8px;font-size:10px;letter-spacing:1px;white-space:nowrap}#mobileActions{display:none;position:fixed;right:14px;bottom:calc(112px + env(safe-area-inset-bottom));z-index:6;gap:10px;pointer-events:auto;touch-action:none}#mobileActions button{width:66px;height:66px;border-radius:50%;border:2px solid var(--line);background:rgba(23,34,56,.94);color:white;font-weight:800;font-size:11px;box-shadow:0 4px 14px #0009;touch-action:none;user-select:none;-webkit-user-select:none}#mobileActions button:active{background:#725326;transform:scale(.95)}@media(max-width:700px){#hud{padding:9px}.brand{font-size:12px}.stats{font-size:11px;gap:8px;padding:8px}.bottom button{padding:9px 10px;font-size:12px}#mobile{display:grid;grid-template-columns:repeat(3,54px);gap:4px;bottom:calc(105px + env(safe-area-inset-bottom))}#mobileActions{display:flex}#mobile button:nth-child(1){grid-column:2}#mobile button:nth-child(2){grid-column:1;grid-row:2}#mobile button:nth-child(3){grid-column:2;grid-row:2}#mobile button:nth-child(4){grid-column:3;grid-row:2}}
+</style></head><body>
+<div id="game"></div>
+<div id="onlineBox" style="position:fixed;left:12px;top:112px;z-index:20;background:rgba(10,15,29,.92);border:1px solid rgba(120,220,160,.45);border-radius:12px;padding:10px;color:#f4f0e8;font:12px system-ui;max-width:min(330px,calc(100vw - 24px));pointer-events:auto">
+ <div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><b>🌐 Multijoueur (serveur requis)</b><button id="onlineToggle" style="background:#29354a;color:white;border:0;border-radius:7px;padding:4px 8px">Masquer</button></div>
+ <div id="onlineFields" style="margin-top:7px">
+  <input id="onlineName" maxlength="18" placeholder="Identifiant" value="Aventurier" style="width:100%;padding:7px;margin:3px 0;background:#101827;color:white;border:1px solid #52627a;border-radius:6px"><input id="onlinePassword" type="password" maxlength="64" placeholder="Mot de passe (compte)" style="width:100%;padding:7px;margin:3px 0;background:#101827;color:white;border:1px solid #52627a;border-radius:6px"><div style="display:flex;gap:6px"><button id="onlineRegister" style="background:#46577a;color:white;border:0;border-radius:7px;padding:7px 9px;margin-top:4px">Créer un compte</button><button id="onlineLogin" style="background:#286b48;color:white;border:0;border-radius:7px;padding:7px 9px;margin-top:4px">Connexion</button></div>
+  <input id="onlineUrl" placeholder="wss://adresse-de-ton-serveur" style="width:100%;padding:7px;margin:3px 0;background:#101827;color:white;border:1px solid #52627a;border-radius:6px">
+  <button id="onlineConnect" style="background:#286b48;color:white;border:0;border-radius:7px;padding:7px 10px;margin-top:4px">Se connecter</button>
+  <span id="onlineStatus" style="display:block;margin-top:6px;color:#c6d3e4">Hors ligne — entre l'adresse du serveur multijoueur.</span>
+ </div>
+</div>
+
+<div id="hud"><div class="top"><div class="brand"><b>LA VALLÉE DES MORTS</b><small>Donjon hanté • Édition immersive</small><div style="margin-top:8px;font-size:12px">PV <span id="hptext">100 / 100</span><div class="bar" style="width:150px"><i id="hpbar"></i></div></div></div><div class="stats"><span>🪙 Or : <strong id="gold">0</strong></span><span>👻 Âmes : <strong id="souls">0</strong></span><span>⚔️ Niveau : <strong id="level">1</strong></span><span>✨ Rebirth : <strong id="rebirth">0</strong></span><span>🌊 Vague : <strong id="wave">0</strong></span></div></div><div class="bottom"><button onclick="openPanel('creatures')">🐾 Créatures</button><button onclick="openPanel('eggs')">🥚 Œufs</button><button onclick="openPanel('character')">🛡️ Personnage</button><button onclick="openPanel('spells')">✨ Sorts</button><button onclick="openPanel('zones')">🗺️ Zones</button><button onclick="openPanel('dungeon')">🚪 Donjon</button><button onclick="openPanel('rebirth')">💎 Rebirth</button><button onclick="castSpell()">⚡ Sort</button><button onclick="openPanel('controls')">⌨️ Commandes</button></div></div>
+<div id="hint">PC : commandes personnalisables dans ⌨️ Commandes • Téléphone : maintiens les flèches • Attaque et sort configurables</div><div id="bossbar"><span id="bossname">BOSS DES ABYSSES</span><div id="bossphase" style="font-size:11px;color:#ffbdc7">PHASE I • ÉVEIL</div><div class="bar"><i id="bossfill" style="width:100%"></i></div></div><div id="toast"></div>
+<div id="mobile" aria-label="Commandes de déplacement"><button data-move="up">↑</button><button data-move="left">←</button><button data-move="down">↓</button><button data-move="right">→</button></div><div id="mobileActions" aria-label="Actions tactiles"><button id="touchAttack">ATTAQUE</button><button id="touchSpell">SORT</button><button id="touchMenu">MENU</button></div>
+<div class="modal" id="modal"><button class="close" onclick="closePanel()">×</button><h2 id="modalTitle"></h2><p id="modalDesc"></p><div class="cards" id="cards"></div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const mount=document.getElementById('game');const scene=new THREE.Scene();scene.background=new THREE.Color(0x080e1d);scene.fog=new THREE.Fog(0x080e1d,18,55);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,100);camera.position.set(0,9,13);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;mount.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0x9eb9e8,0x151020,2));const sun=new THREE.DirectionalLight(0xffdca2,2.2);sun.position.set(-7,14,8);sun.castShadow=true;scene.add(sun);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(70,70),new THREE.MeshStandardMaterial({color:0x252a36,roughness:.96,metalness:.04}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+// Sol de pierre, fissures et décorations animées de la vallée
+const grid=new THREE.GridHelper(70,35,0x303b52,0x202a3d);grid.position.y=.014;grid.material.transparent=true;grid.material.opacity=.18;scene.add(grid);
+const decor=[];
+function addDeadTree(x,z,scale=1){const g=new THREE.Group();const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.12*scale,.24*scale,2.3*scale,7),mat(0x29252b));trunk.position.y=1.15*scale;trunk.rotation.z=.12;g.add(trunk);for(let i=0;i<4;i++){const b=new THREE.Mesh(new THREE.CylinderGeometry(.045*scale,.09*scale,1.15*scale,6),mat(0x30282d));b.position.set((i%2?1:-1)*.35*scale,(1.45+i*.16)*scale,0);b.rotation.z=(i%2?-.9:.9);g.add(b)}g.position.set(x,0,z);g.rotation.y=(x*z)%2;scene.add(g);decor.push({g,type:'tree',phase:Math.random()*6})}
+function addGrave(x,z,rot=0){const g=new THREE.Group();const stone=new THREE.Mesh(new THREE.BoxGeometry(.72,1,.2),new THREE.MeshStandardMaterial({color:0x596171,roughness:1}));stone.position.y=.5;stone.castShadow=true;g.add(stone);const cross=new THREE.Mesh(new THREE.BoxGeometry(.18,.72,.23),mat(0x697487));cross.position.y=.95;g.add(cross);const base=new THREE.Mesh(new THREE.BoxGeometry(.95,.16,.5),mat(0x30394a));base.position.y=.08;g.add(base);g.position.set(x,0,z);g.rotation.y=rot;scene.add(g)}
+function addCrystal(x,z,color=0x63d9ce){const g=new THREE.Group();const crystal=new THREE.Mesh(new THREE.OctahedronGeometry(.42,0),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:.8,metalness:.25,roughness:.25}));crystal.position.y=.65;crystal.scale.y=1.8;g.add(crystal);const light=new THREE.PointLight(color,1.1,5);light.position.y=.8;g.add(light);g.position.set(x,0,z);scene.add(g);decor.push({g,type:'crystal',phase:Math.random()*6})}
+function addRuin(x,z){const g=new THREE.Group();for(let i=0;i<3;i++){const col=new THREE.Mesh(new THREE.CylinderGeometry(.22,.28,2.5+(i%2)*.5,7),mat(0x414858));col.position.set(i*.9,1.25,0);col.castShadow=true;g.add(col)}const beam=new THREE.Mesh(new THREE.BoxGeometry(2.8,.28,.38),mat(0x343d4e));beam.position.set(.9,2.55,0);g.add(beam);g.position.set(x,0,z);scene.add(g)}
+// Ruines en périphérie, tombes, arbres morts et cristaux d'âme
+[[-13,-10,1],[-14,1,.8],[13,-11,1.1],[14,2,.9],[-12,12,.9],[12,12,1.15],[-5,-14,.8],[6,-14,1]].forEach(v=>addDeadTree(...v));
+[[-5,-8,.2],[5,-8,-.2],[-6,9,.4],[6,9,-.4],[-11,-4,.8],[11,5,-.8]].forEach(v=>addGrave(...v));
+[[-4,-11,0x65d9ff],[4,-11,0x65d9ff],[-10,4,0x71ff9b],[10,-3,0x9c75ff],[-3,12,0x71ff9b],[3,12,0x9c75ff]].forEach(v=>addCrystal(...v));
+addRuin(-11,-12);addRuin(9,-13);
+// DONJON : trois salles reliées par un long couloir. Aucun piège : exploration et combats uniquement.
+const dungeonDecor=[];
+function stoneBlock(x,y,z,w,h,d,color=0x343746){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color,roughness:.96}));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}
+function dungeonPillar(x,z){const base=stoneBlock(x,.28,z,1.05,.56,1.05,0x252a36);const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.34,.48,4.2,8),mat(0x414252));shaft.position.set(x,2.65,z);shaft.castShadow=true;scene.add(shaft);const cap=stoneBlock(x,4.85,z,1.1,.38,1.1,0x555064);return shaft}
+function archway(z,width=5.8){const x=width/2;dungeonPillar(-x,z);dungeonPillar(x,z);const beam=stoneBlock(0,4.75,z,width+1,.65,.9,0x4a4654);const glow=new THREE.PointLight(0x62d99b,1.7,12);glow.position.set(0,3.3,z-.5);scene.add(glow);const ring=new THREE.Mesh(new THREE.TorusGeometry(1.25,.055,8,32),new THREE.MeshStandardMaterial({color:0x65d9a1,emissive:0x1b8754,emissiveIntensity:1.8}));ring.position.set(0,2.2,z-.52);scene.add(ring);dungeonDecor.push({ring,glow,phase:Math.random()*6});}
+function chamber(z,width,depth,label,boss=false){const wall=0x343442;for(let x of [-width/2,width/2]){stoneBlock(x,2,z,width*.08,4,depth,wall);for(let zz of [z-depth/2,z+depth/2])stoneBlock(x/2,2,zz,width/2,4,.65,wall)}
+ for(let x of [-width*.34,width*.34]){dungeonPillar(x,z-depth*.32);dungeonPillar(x,z+depth*.32)}
+ // pavés et médaillon décoratif au sol
+ for(let ix=0;ix<Math.floor(width/1.5);ix++)for(let iz=0;iz<Math.floor(depth/1.5);iz++){const tile=stoneBlock(-width/2+.75+ix*1.5,.025,z-depth/2+.75+iz*1.5,1.42,.05,1.42,(ix+iz)%2?0x343744:0x2b303d);tile.material.roughness=1}
+ const med=new THREE.Mesh(new THREE.TorusGeometry(boss?2.2:1.35,.07,8,48),new THREE.MeshStandardMaterial({color:boss?0xb84b62:0x5bc995,emissive:boss?0x60182c:0x174c35,emissiveIntensity:1.4}));med.rotation.x=-Math.PI/2;med.position.set(0,.09,z);scene.add(med);dungeonDecor.push({ring:med,phase:Math.random()*6,flat:true});
+ if(label){const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.fillStyle='rgba(8,12,22,.82)';ctx.fillRect(0,0,512,128);ctx.strokeStyle=boss?'#d66b7c':'#73dca9';ctx.lineWidth=5;ctx.strokeRect(5,5,502,118);ctx.fillStyle='#f4e8d0';ctx.font='bold 38px Georgia';ctx.textAlign='center';ctx.fillText(label,256,79);const tex=new THREE.CanvasTexture(c);const sign=new THREE.Mesh(new THREE.PlaneGeometry(5.2,1.3),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));sign.position.set(0,5.6,z-depth/2+.5);scene.add(sign)}
+}
+// Couloir d'entrée, salle des âmes, galerie des gardiens et grande salle du boss
+chamber(-20,13,12,'SALLE DES ÂMES');archway(-12,6);chamber(-39,13,15,'GALERIE DES GARDIENS');archway(-30,6);chamber(-62,18,19,'SANCTUAIRE DU BOSS',true);
+for(let z=-14;z>=-55;z-=4){for(let x of [-2.8,2.8]){const torch=new THREE.Group();const stem=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,1.15,6),mat(0x55412f));stem.position.y=.58;torch.add(stem);const flame=new THREE.Mesh(new THREE.SphereGeometry(.17,8,8),new THREE.MeshBasicMaterial({color:0x69ffad}));flame.position.y=1.28;torch.add(flame);const light=new THREE.PointLight(0x51df9b,1.3,6);light.position.y=1.35;torch.add(light);torch.position.set(x,0,z);scene.add(torch);dungeonDecor.push({torch,flame,light,phase:Math.random()*6})}}
+
+// Lune rouge et halo atmosphérique
+const moon=new THREE.Mesh(new THREE.SphereGeometry(2.1,20,16),new THREE.MeshBasicMaterial({color:0x8c3447}));moon.position.set(-16,15,-24);scene.add(moon);const moonGlow=new THREE.PointLight(0x8c3447,2,35);moonGlow.position.copy(moon.position);scene.add(moonGlow);
+// Lucioles et cendres flottantes (animation légère, adaptée au mobile)
+const motes=[];const moteGeo=new THREE.SphereGeometry(.035,5,4);for(let i=0;i<52;i++){const m=new THREE.Mesh(moteGeo,new THREE.MeshBasicMaterial({color:i%3?0x8bffc0:0xffb1a1,transparent:true,opacity:.55}));m.position.set((Math.random()-.5)*28,.3+Math.random()*4,(Math.random()-.5)*28);scene.add(m);motes.push({m,phase:Math.random()*6,speed:.25+Math.random()*.5})}
+function pillar(x,z){let p=new THREE.Mesh(new THREE.CylinderGeometry(.45,.6,4,8),new THREE.MeshStandardMaterial({color:0x39445a,roughness:.8}));p.position.set(x,2,z);p.castShadow=true;scene.add(p);let flame=new THREE.PointLight(0x65aaff,1.3,8);flame.position.set(x,3.2,z);scene.add(flame);let orb=new THREE.Mesh(new THREE.IcosahedronGeometry(.16,1),new THREE.MeshStandardMaterial({color:0x73caff,emissive:0x1c78ff,emissiveIntensity:2}));orb.position.copy(flame.position);scene.add(orb)}
+[[-8,-7],[8,-7],[-8,7],[8,7]].forEach(v=>pillar(...v));
+const mat=(c,em=0)=>new THREE.MeshStandardMaterial({color:c,emissive:em,emissiveIntensity:em?1.2:0});
+// Personnage : nécromancien squelettique inspiré de la référence visuelle
+
+
+// Monde partagé : le serveur décide des vagues, PV des ennemis et récompenses.
+const sharedEnemyIds=new Set();
+let sharedWorldEnabled=false;
+function requestSharedWorld(type,extra={}){
+ if(onlineSocket&&onlineSocket.readyState===WebSocket.OPEN)
+  onlineSocket.send(JSON.stringify({type,...extra,region:currentRegion}));
+}
+function applySharedWorld(world){
+ if(!world||world.region!==currentRegion)return;
+ sharedWorldEnabled=true;state.wave=world.wave||0;ui();
+ const incoming=new Set();
+ for(const item of (world.enemies||[])){
+  incoming.add(item.id);
+  let e=enemies.find(x=>x.sharedId===item.id);
+  if(!e){
+   const g=new THREE.Group(),boss=!!item.boss,size=boss?1.25:.55;
+   const core=new THREE.Mesh(new THREE.DodecahedronGeometry(size,1),mat(boss?0x9f2445:0x6b9a54,boss?0x5b1025:0x142d0a));
+   core.position.y=size;core.castShadow=true;g.add(core);
+   const eye=new THREE.Mesh(new THREE.SphereGeometry(boss?.12:.07,8,8),mat(0xffdf9a,0xff8a20));eye.position.set(0,size+.08,-size*.82);g.add(eye);
+   scene.add(g);e={g,hp:item.hp,max:item.max,boss,spd:0,sharedId:item.id};enemies.push(e);
+  }
+  e.hp=item.hp;e.max=item.max;e.boss=!!item.boss;e.g.position.set(item.x,0,item.z);
+  if(e.boss){state.boss=true;document.getElementById('bossbar').style.display='block';document.getElementById('bossname').textContent=item.name||'Boss';document.getElementById('bossphase').textContent='PHASE '+(item.phase||1);document.getElementById('bossfill').style.width=(100*item.hp/item.max)+'%';}
+ }
+ for(const e of [...enemies])if(e.sharedId&&!incoming.has(e.sharedId)){scene.remove(e.g);enemies=enemies.filter(x=>x!==e);}
+ if(!(world.enemies||[]).some(x=>x.boss)){state.boss=false;document.getElementById('bossbar').style.display='none';}
+ if(world.lastReward&&world.lastReward.forPlayer===onlinePlayerId){
+  const r=world.lastReward;state.gold+=r.gold;state.souls+=r.souls;state.unique+=r.seal||0;
+  if(r.quest)recordQuestKill();
+  toast('Butin du groupe : +'+r.gold+' or, +'+r.souls+' âmes'+(r.seal?' et 1 Sceau abyssal':'')+'.');
+  saveGame();ui();
+ }
+}
+
+const remotePlayers=new Map();
+let onlineSocket=null,onlineLastSend=0,onlinePlayerId=null,onlineAuthMode='login',onlineAuthToken=null,onlineAuthenticated=false;
+function onlineStatus(t){const el=document.getElementById('onlineStatus');if(el)el.textContent=t;}
+function makeRemotePlayer(id,name){
+ const g=new THREE.Group();
+ const robe=new THREE.Mesh(new THREE.ConeGeometry(.62,1.55,8),new THREE.MeshStandardMaterial({color:0x33485d,roughness:.95}));
+ robe.position.y=.82;g.add(robe);
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.34,12,10),new THREE.MeshStandardMaterial({color:0xb9c3c9,emissive:0x253c48}));
+ head.position.y=1.8;g.add(head);
+ const glow=new THREE.PointLight(0x6de6ff,1.3,4);glow.position.y=1.7;g.add(glow);
+ const label=document.createElement('div');label.textContent=name;label.style.cssText='position:fixed;z-index:10;color:#bdf5ff;font:12px system-ui;text-shadow:0 1px 4px #000;pointer-events:none;display:none';document.body.appendChild(label);
+ scene.add(g);
+ const pet=new THREE.Group();
+ const body=new THREE.Mesh(new THREE.SphereGeometry(.28,10,8),new THREE.MeshStandardMaterial({color:0x70d9a0,emissive:0x164c37}));
+ body.position.y=.35;pet.add(body);
+ const eyeMat=new THREE.MeshBasicMaterial({color:0xeaffc9});
+ for(const x of [-.11,.11]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,6,6),eyeMat);eye.position.set(x,.43,-.22);pet.add(eye)}
+ scene.add(pet);
+ return {g,pet,label,name,x:0,z:0,rot:0,petId:'wisp',petLevel:1};
+}
+function connectMultiplayer(mode='login'){
+ const url=document.getElementById('onlineUrl').value.trim();
+ const name=(document.getElementById('onlineName').value.trim()||'Aventurier').slice(0,18);
+ const password=document.getElementById('onlinePassword').value;
+ if(!/^wss?:\/\//i.test(url)){onlineStatus('Adresse invalide : utilise ws:// ou wss://');return;}
+ if(password.length<6){onlineStatus('Mot de passe : 6 caractères minimum.');return;}
+ onlineAuthMode=mode;onlineAuthenticated=false;
+ try{if(onlineSocket)onlineSocket.close();onlineStatus('Connexion au serveur…');onlineSocket=new WebSocket(url);
+ onlineSocket.onopen=()=>{for(const e of enemies)scene.remove(e.g);enemies=[];state.boss=false;document.getElementById('bossbar').style.display='none';onlineSocket.send(JSON.stringify({type:'auth',mode,username:name,password}));onlineStatus('Authentification…');document.getElementById('onlineConnect').textContent='Reconnecter';};
+ onlineSocket.onmessage=(ev)=>{let m;try{m=JSON.parse(ev.data)}catch{return}
+  if(m.type==='auth_ok'){
+  onlineAuthenticated=true;onlineAuthToken=m.token;
+  if(m.save){if(m.save.state)Object.assign(state,m.save.state);if(Number.isInteger(m.save.currentRegion))currentRegion=m.save.currentRegion; if(Array.isArray(m.save.regionQuests))m.save.regionQuests.forEach((q,i)=>{if(regionQuests[i])Object.assign(regionQuests[i],q)});buildRegionMap(currentRegion);ui();}
+  onlineSocket.send(JSON.stringify({type:'join',name,region:currentRegion,petId:state.selectedPet,petLevel:state.petLevel,token:m.token}));
+  onlineStatus('Compte connecté • entrée dans le donjon…');return;
+ }
+ if(m.type==='auth_error'){onlineStatus(m.message||'Connexion refusée.');return;}
+ if(m.type==='welcome'){onlinePlayerId=m.id;return}
+  if(m.type==='world')applySharedWorld(m.world);
+  if(m.type==='playerState'){state.hp=m.hp;state.maxHp=m.maxHp||state.maxHp;ui();if(state.hp<=0)toast('Tu as été vaincu dans le donjon partagé.');}
+  if(m.type==='reward'&&m.forPlayer===onlinePlayerId){state.gold+=m.gold||0;state.souls+=m.souls||0;if(m.seal)state.unique++;ui();saveGame();requestSharedWorld('saveProgress',{save:collectSaveData()});toast('Récompense de groupe reçue !');}
+  if(m.type==='combat'){
+   if(m.from!==onlinePlayerId){
+    const pos=new THREE.Vector3(Number(m.x)||0,0,Number(m.z)||0);
+    const dir=new THREE.Vector3(Math.sin(Number(m.rot)||0),0,-Math.cos(Number(m.rot)||0));
+    const range=m.action==='spell'?9:8;
+    const candidates=enemies.map(e=>({e,d:e.g.position.clone().sub(pos),dist:e.g.position.distanceTo(pos)}))
+     .filter(v=>v.dist<=range&&(m.action==='spell'||v.d.clone().normalize().dot(dir)>.05))
+     .sort((a,b)=>a.dist-b.dist);
+    const hit=m.action==='spell'?candidates:candidates.slice(0,1);
+    for(const v of hit){v.e.hp-=Math.max(1,Number(m.damage)||1);hitFx(v.e.g.position);if(v.e.hp<=0)killEnemy(v.e);}
+   }
+  }
+  if(m.type==='players'){const seen=new Set();for(const p of m.players){if(p.id===onlinePlayerId)continue;seen.add(p.id);let r=remotePlayers.get(p.id);if(!r){r=makeRemotePlayer(p.id,p.name);remotePlayers.set(p.id,r)}r.name=p.name;r.x=p.x;r.z=p.z;r.rot=p.rot||0;r.petId=p.petId||'wisp';r.petLevel=p.petLevel||1;
+   const petColors={wisp:0x70d9a0,raven:0x66758f,hound:0xb78a5b,slime:0x72c8c5};r.pet.children[0].material.color.setHex(petColors[r.petId]||0xb78bd4);r.label.textContent=p.name+' • '+r.petId+' Nv.'+r.petLevel;r.g.visible=p.region===currentRegion;r.pet.visible=r.g.visible;r.label.textContent=p.name;}
+   for(const [id,r] of remotePlayers){if(!seen.has(id)){scene.remove(r.g);r.label.remove();remotePlayers.delete(id)}}
+   onlineStatus('Connecté • '+remotePlayers.size+' autre(s) joueur(s) visible(s).');
+  }
+  if(m.type==='notice')onlineStatus(m.message);
+ };
+ onlineSocket.onclose=()=>onlineStatus('Déconnecté du serveur.');
+ onlineSocket.onerror=()=>onlineStatus('Erreur de connexion. Vérifie l’adresse et le serveur.');
+ }catch(e){onlineStatus('Impossible de lancer la connexion.');}
+}
+document.getElementById('onlineConnect').addEventListener('click',connectMultiplayer);
+document.getElementById('onlineRegister').addEventListener('click',()=>connectMultiplayer('register'));
+document.getElementById('onlineLogin').addEventListener('click',()=>connectMultiplayer('login'));
+document.getElementById('onlineToggle').addEventListener('click',()=>{const f=document.getElementById('onlineFields');f.style.display=f.style.display==='none'?'block':'none';document.getElementById('onlineToggle').textContent=f.style.display==='none'?'Afficher':'Masquer';});
+function updateMultiplayer(dt){
+ if(onlineSocket&&onlineSocket.readyState===WebSocket.OPEN){
+  onlineLastSend+=dt;if(onlineLastSend>.12){onlineLastSend=0;onlineSocket.send(JSON.stringify({type:'move',x:player.position.x,z:player.position.z,rot:player.rotation.y,region:currentRegion,petId:state.selectedPet,petLevel:state.petLevel}));}
+ }
+ for(const r of remotePlayers.values()){
+  r.g.position.x+=(r.x-r.g.position.x)*Math.min(1,dt*10);r.g.position.z+=(r.z-r.g.position.z)*Math.min(1,dt*10);r.g.rotation.y=r.rot;
+  r.pet.position.set(r.g.position.x+1.0,r.g.position.y+.15,r.g.position.z+.35);
+  r.pet.position.y+=Math.sin(performance.now()*.003+r.x)*.12;
+  const v=r.g.position.clone();v.y+=2.35;v.project(camera);
+  const x=(v.x*.5+.5)*innerWidth,y=(-v.y*.5+.5)*innerHeight;
+  r.label.style.left=x+'px';r.label.style.top=y+'px';r.label.style.display=(r.g.visible&&v.z<1)?'block':'none';
+ }
+}
+
+const player=new THREE.Group();
+const anim={walk:0,attack:0,cast:0};const sleeves=[];const effects=[];
+const robeMat=new THREE.MeshStandardMaterial({color:0x211d27,roughness:1});
+const robeEdge=new THREE.MeshStandardMaterial({color:0x51413b,roughness:.95});
+const boneMat=new THREE.MeshStandardMaterial({color:0xc8c5a9,roughness:.85});
+const darkMat=new THREE.MeshStandardMaterial({color:0x10131a,roughness:1});
+const greenMat=new THREE.MeshStandardMaterial({color:0x75ff85,emissive:0x21d94b,emissiveIntensity:2.4});
+const robe=new THREE.Mesh(new THREE.ConeGeometry(.78,1.9,9,1),robeMat);robe.position.y=.98;robe.castShadow=true;player.add(robe);
+const chest=new THREE.Mesh(new THREE.SphereGeometry(.48,12,10),new THREE.MeshStandardMaterial({color:0x38323a,metalness:.35,roughness:.8}));chest.scale.set(1,.9,.72);chest.position.y=1.65;player.add(chest);
+const mantle=new THREE.Mesh(new THREE.ConeGeometry(.72,1.35,8),new THREE.MeshStandardMaterial({color:0x171820,side:THREE.DoubleSide}));mantle.position.set(0,1.2,.28);mantle.rotation.x=-.22;player.add(mantle);
+// Crâne et capuche
+const hood=new THREE.Mesh(new THREE.SphereGeometry(.48,12,10,0,Math.PI*2,0,Math.PI*.72),robeMat);hood.position.set(0,2.25,0);hood.scale.set(1.05,1.12,1);player.add(hood);
+const skull=new THREE.Mesh(new THREE.SphereGeometry(.29,14,12),boneMat);skull.scale.set(.9,1.05,.82);skull.position.set(0,2.2,-.18);player.add(skull);
+const jaw=new THREE.Mesh(new THREE.BoxGeometry(.34,.13,.25),boneMat);jaw.position.set(0,1.99,-.22);player.add(jaw);
+for(const x of [-.115,.115]){const socket=new THREE.Mesh(new THREE.SphereGeometry(.085,10,8),darkMat);socket.position.set(x,2.24,-.414);player.add(socket);const eye=new THREE.Mesh(new THREE.SphereGeometry(.045,8,8),greenMat);eye.position.set(x,2.24,-.46);player.add(eye)}
+// Bras en robe, mains osseuses et bâton
+for(const side of [-1,1]){const sleeve=new THREE.Mesh(new THREE.ConeGeometry(.23,.95,7),robeMat);sleeve.position.set(side*.58,1.55,-.02);sleeve.rotation.z=side*.65;player.add(sleeve);sleeves.push({mesh:sleeve,side});const hand=new THREE.Mesh(new THREE.SphereGeometry(.13,8,8),boneMat);hand.position.set(side*.88,1.2,-.05);player.add(hand)}
+const staff=new THREE.Group();const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.045,.075,2.5,7),new THREE.MeshStandardMaterial({color:0x60432b,roughness:1}));shaft.position.y=1.25;staff.add(shaft);const staffSkull=new THREE.Mesh(new THREE.SphereGeometry(.23,10,8),boneMat);staffSkull.position.set(0,2.58,0);staff.add(staffSkull);for(const x of [-.09,.09]){const se=new THREE.Mesh(new THREE.SphereGeometry(.045,8,8),greenMat);se.position.set(x,2.6,-.19);staff.add(se)}staff.position.set(1.02,0,-.12);staff.rotation.z=-.12;player.add(staff);
+// Orbes d'esprits verts qui gravitent autour du nécromancien
+const spirits=[];for(let i=0;i<5;i++){const spirit=new THREE.Group();const orb=new THREE.Mesh(new THREE.SphereGeometry(.19,10,8),greenMat);spirit.add(orb);const jawOrb=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),boneMat);jawOrb.position.y=-.12;spirit.add(jawOrb);const glow=new THREE.PointLight(0x36ff69,.65,2.8);spirit.add(glow);spirit.userData={angle:i*Math.PI*2/5,radius:1.15+(i%2)*.3,height:2.0+(i%3)*.35};player.add(spirit);spirits.push(spirit)}
+player.position.set(0,0,4);scene.add(player);
+const petTypes=[
+{id:'wisp',name:'Feu follet',rarity:'Commune',desc:'Esprit équilibré qui lance des éclats d’âme.',cost:0,damage:1,color:0x8e69ff},
+{id:'hound',name:'Chien d’os',rarity:'Commune',desc:'Fonce sur les ennemis et mord avec puissance.',cost:120,damage:1.65,color:0xc8c2a8},
+{id:'raven',name:'Corbeau pestilentiel',rarity:'Rare',desc:'Projette des plumes spectrales à distance.',cost:260,damage:1.35,color:0x54d68b},
+{id:'spider',name:'Veuve des cryptes',rarity:'Rare',desc:'Araignée squelettique aux attaques rapides.',cost:420,damage:1.5,color:0x9a6bba},
+{id:'slime',name:'Gelée funèbre',rarity:'Commune',desc:'Gelée hantée qui absorbe l’énergie des ennemis.',cost:520,damage:1.15,color:0x63c9a4},
+{id:'golem',name:'Golem sépulcral',rarity:'Épique',desc:'Gardien de pierre qui frappe lourdement.',cost:850,damage:2.1,color:0x8b929e},
+{id:'banshee',name:'Banshee voilée',rarity:'Épique',desc:'Spectre hurlant qui déchaîne une onde d’âme.',cost:1100,damage:1.9,color:0x9bd8e8},
+{id:'imp',name:'Diablotin cendré',rarity:'Rare',desc:'Petit démon agile aux flammes vertes.',cost:1450,damage:1.7,color:0xd47a52},
+{id:'knight',name:'Chevalier sans-tête',rarity:'Légendaire',desc:'Guerrier maudit à l’armure ancienne.',cost:2200,damage:2.5,color:0xb4a078},
+{id:'lich',name:'Liche ancienne',rarity:'Légendaire',desc:'Mage mort-vivant maîtrisant les arts interdits.',cost:3500,damage:2.8,color:0x63e0a0},
+{id:'dragon',name:'Drake d’outre-tombe',rarity:'Mythique',desc:'Dragon spectral dont le souffle déchire les ombres.',cost:6000,damage:3.4,color:0x54a9db},
+{id:'reaper',name:'Faucheur abyssal',rarity:'Mythique',desc:'Entité rare venue du cœur de la Vallée des Morts.',cost:10000,damage:4,color:0x48ff86}
+];
+const petModels={};function buildPet(type){
+ const g=new THREE.Group(),c=type.color,main=mat(c,c),parts={legs:[],wings:[],rings:[],eyes:[],tail:null};
+ const bone=new THREE.MeshStandardMaterial({color:0xd2cdb8,roughness:.82});
+ if(type.id==='wisp'){
+  const core=new THREE.Mesh(new THREE.SphereGeometry(.38,16,14),main);core.scale.set(.9,1.2,.9);core.position.y=.62;g.add(core);parts.core=core;
+  for(let i=0;i<3;i++){let ring=new THREE.Mesh(new THREE.TorusGeometry(.48+i*.09,.025,7,28),new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:.7}));ring.rotation.x=Math.PI/2+i*.55;ring.position.y=.62;g.add(ring);parts.rings.push(ring)}
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(.18,.62,9),main);tail.position.set(0,.16,.38);tail.rotation.x=Math.PI;g.add(tail);parts.tail=tail;
+  for(let x of [-.13,.13]){let eye=new THREE.Mesh(new THREE.SphereGeometry(.055,8,8),new THREE.MeshBasicMaterial({color:0xffffff}));eye.position.set(x,.72,-.32);g.add(eye);parts.eyes.push(eye)}
+ }else if(type.id==='hound'){
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.72,.48,.95),bone);body.position.y=.48;g.add(body);parts.body=body;
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.3,12,10),bone);head.position.set(0,.72,-.48);g.add(head);parts.head=head;
+  for(let x of [-.19,.19]){let ear=new THREE.Mesh(new THREE.ConeGeometry(.1,.35,5),bone);ear.position.set(x,1,-.5);g.add(ear);let eye=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),greenMat);eye.position.set(x*.7,.76,-.75);g.add(eye);parts.eyes.push(eye)}
+  for(let x of [-.23,.23])for(let z of [-.28,.3]){let leg=new THREE.Mesh(new THREE.CylinderGeometry(.07,.09,.42,7),bone);leg.position.set(x,.2,z);g.add(leg);parts.legs.push({mesh:leg,x,z})}
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(.09,.5,7),bone);tail.position.set(0,.56,.58);tail.rotation.x=-1.1;g.add(tail);parts.tail=tail;
+ }else if(type.rarity){
+  const glow=new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:.75,roughness:.55});
+  const bodyGeo=type.id==='golem'?new THREE.DodecahedronGeometry(.48,1):type.id==='spider'?new THREE.SphereGeometry(.34,12,10):type.id==='dragon'?new THREE.ConeGeometry(.42,.95,8):new THREE.SphereGeometry(.38,14,12);
+  const body=new THREE.Mesh(bodyGeo,glow);body.position.y=.62;body.scale.set(type.id==='slime'?1.15:.95,type.id==='knight'?1.35:1,type.id==='spider'?1.25:.9);g.add(body);parts.body=body;
+  const head=new THREE.Mesh(type.id==='lich'||type.id==='banshee'?new THREE.ConeGeometry(.25,.48,8):new THREE.SphereGeometry(.23,10,8),bone);head.position.set(0,1.02,-.22);g.add(head);parts.head=head;
+  for(const side of [-1,1]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.055,8,8),new THREE.MeshBasicMaterial({color:0xefffbd}));eye.position.set(side*.105,1.04,-.42);g.add(eye);parts.eyes.push(eye);
+   if(type.id==='spider'||type.id==='dragon'||type.id==='reaper'){const horn=new THREE.Mesh(new THREE.ConeGeometry(.09,.42,6),glow);horn.position.set(side*.28,1.05,-.05);horn.rotation.z=side*-.45;g.add(horn)}
+   if(type.id==='spider'||type.id==='golem'||type.id==='knight'){const limb=new THREE.Mesh(new THREE.CylinderGeometry(.055,.075,.48,6),bone);limb.position.set(side*.4,.35,.12);limb.rotation.z=side*.7;g.add(limb);parts.legs.push({mesh:limb,x:side,z:.12})}
+  }
+  if(type.id==='dragon'||type.id==='raven'||type.id==='reaper'||type.id==='banshee'){for(const side of [-1,1]){const wing=new THREE.Mesh(new THREE.ConeGeometry(.25,.9,7),glow);wing.position.set(side*.42,.72,.05);wing.rotation.z=side*-1.05;g.add(wing);parts.wings.push({mesh:wing,side})}}
+  if(type.id==='imp'||type.id==='dragon'||type.id==='reaper'){const tail=new THREE.Mesh(new THREE.ConeGeometry(.1,.65,7),glow);tail.position.set(0,.38,.48);tail.rotation.x=-1.1;g.add(tail);parts.tail=tail}
+ }else{
+  const body=new THREE.Mesh(new THREE.SphereGeometry(.36,14,12),new THREE.MeshStandardMaterial({color:0x172a25,emissive:0x0b3524,emissiveIntensity:1.4}));body.position.y=.65;g.add(body);parts.body=body;
+  const head=new THREE.Mesh(new THREE.ConeGeometry(.22,.48,7),new THREE.MeshStandardMaterial({color:0x263d34}));head.rotation.x=-Math.PI/2;head.position.set(0,.72,-.38);g.add(head);parts.head=head;
+  for(let side of [-1,1]){let wing=new THREE.Mesh(new THREE.ConeGeometry(.22,.85,6),new THREE.MeshStandardMaterial({color:0x254c3b,side:THREE.DoubleSide,emissive:0x0d301e}));wing.position.set(side*.38,.72,.02);wing.rotation.z=side*-1.05;g.add(wing);parts.wings.push({mesh:wing,side});let eye=new THREE.Mesh(new THREE.SphereGeometry(.05,8,8),greenMat);eye.position.set(side*.12,.75,-.52);g.add(eye);parts.eyes.push(eye)}
+ }
+ g.userData.type=type.id;g.userData.parts=parts;g.userData.animTime=Math.random()*5;g.userData.attackPulse=0;g.userData.evoAura=null;return g
+}
+function applyPetEvolution(){if(!pet)return;pet.scale.setScalar(state.petEvo?1.35:1);if(pet.userData.evoAura){pet.remove(pet.userData.evoAura);pet.userData.evoAura=null}if(state.petEvo){const aura=new THREE.Mesh(new THREE.TorusGeometry(.62,.045,8,32),new THREE.MeshBasicMaterial({color:0x8dffb0,transparent:true,opacity:.8,emissive:0x32ff76}));aura.rotation.x=Math.PI/2;aura.position.y=.45;pet.add(aura);pet.userData.evoAura=aura;pet.traverse(o=>{if(o.material&&o.material.emissive)o.material.emissiveIntensity=2.6})}}
+function setPet(typeId){if(pet)scene.remove(pet);pet=buildPet(petTypes.find(t=>t.id===typeId));pet.position.set(-1.4,0,4);scene.add(pet);state.selectedPet=typeId;applyPetEvolution();}
+let pet=null;let petLevel=1;
+let state={gold:0,souls:0,level:1,rebirth:0,wave:0,hp:100,maxHp:100,damage:12,petLevel:1,petDamage:6,selectedPet:'wisp',unlockedPets:['wisp'],petEvo:0,spell:1,spellDamage:18,enemy:null,boss:false,unique:0,attackCd:0,enemyCd:0};
+// Quêtes régionales : chaque région possède un objectif de chasse et une récompense.
+const regionQuests = [
+ {goal:10,progress:0,claimed:false,rewardGold:100,rewardSouls:50},
+ {goal:12,progress:0,claimed:false,rewardGold:140,rewardSouls:65},
+ {goal:14,progress:0,claimed:false,rewardGold:180,rewardSouls:80},
+ {goal:16,progress:0,claimed:false,rewardGold:220,rewardSouls:100},
+ {goal:18,progress:0,claimed:false,rewardGold:280,rewardSouls:130}
+];
+
+// Sauvegarde locale automatique : progression conservée sur cet appareil/navigateur.
+const SAVE_KEY='vallee_des_morts_save_v1';
+function collectSaveData(){return {state:{...state},currentRegion,regionQuests,keybinds};}
+function saveGame(show=false){
+ try{
+  const payload={...collectSaveData(),savedAt:Date.now()};
+  localStorage.setItem(SAVE_KEY,JSON.stringify(payload));
+  if(show)toast('Progression sauvegardée sur cet appareil.');
+  return true;
+ }catch(err){if(show)toast('Sauvegarde impossible : espace ou navigateur indisponible.');return false;}
+}
+function loadGame(){
+ try{
+  const raw=localStorage.getItem(SAVE_KEY);if(!raw)return false;
+  const data=JSON.parse(raw);
+  if(data.state&&typeof data.state==='object')Object.assign(state,data.state);
+  if(Array.isArray(data.regionQuests)&&data.regionQuests.length===regionQuests.length){
+   data.regionQuests.forEach((q,i)=>Object.assign(regionQuests[i],q));
+  }
+  if(Number.isInteger(data.currentRegion)&&data.currentRegion>=0&&data.currentRegion<regionNames.length)currentRegion=data.currentRegion;
+  if(data.keybinds&&typeof data.keybinds==='object')Object.assign(keybinds,data.keybinds);
+  return true;
+ }catch(err){console.warn('Sauvegarde illisible',err);return false;}
+}
+
+function questStatus(id=currentRegion){
+ const q=regionQuests[id];
+ return q.claimed?'Terminée':q.progress+'/'+q.goal+' monstres vaincus';
+}
+function recordQuestKill(){
+ const q=regionQuests[currentRegion];
+ if(q.progress<q.goal)q.progress++;
+ if(q.progress>=q.goal&&!q.claimed){
+  q.claimed=true;state.gold+=q.rewardGold;state.souls+=q.rewardSouls;
+  toast('Quête régionale terminée ! +'+q.rewardGold+' or et +'+q.rewardSouls+' âmes.');
+ }
+}
+setPet('wisp');let keys={};const keybinds={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'};
+const hadSave=loadGame();
+const mousebinds={attack:0,spell:2};let waitingBind=null;let enemies=[];let projectiles=[];let last=0;let toastTimer;
+function toast(t){let el=document.getElementById('toast');el.textContent=t;el.style.display='block';clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display='none',2300)}
+function ui(){for(let k of ['gold','souls','level','rebirth','wave'])document.getElementById(k).textContent=state[k];document.getElementById('hptext').textContent=Math.ceil(state.hp)+' / '+state.maxHp;document.getElementById('hpbar').style.width=(state.hp/state.maxHp*100)+'%'}
+function spawnEnemy(boss=false){let g=new THREE.Group();let color=boss?0x9f2445:0x6b9a54;let size=boss?1.25:.55;let core=new THREE.Mesh(new THREE.DodecahedronGeometry(size,1),mat(color,boss?0x5b1025:0x142d0a));core.position.y=size;core.castShadow=true;g.add(core);let eye=new THREE.Mesh(new THREE.SphereGeometry(boss?.12:.07,8,8),mat(0xffdf9a,0xff8a20));eye.position.set(0,size+.08,-size*.82);g.add(eye);g.position.set((Math.random()-.5)*12,0,-8-Math.random()*4);scene.add(g);let max=boss?340+state.rebirth*110+currentRegion*18:35+state.wave*12+currentRegion*18;enemies.push({g,hp:max,max,boss,spd:boss?1.15:1.5+Math.random()*.35});if(boss){state.boss=true;document.getElementById('bossbar').style.display='block';document.getElementById('bossname').textContent=['Gardien Sylvestre','Roi des Glaces','Spectre du Marais','Seigneur des Cendres','Le Nécromancien Éternel'][currentRegion];document.getElementById('bossphase').textContent='PHASE I • ÉVEIL';document.getElementById('bossphase').dataset.phase='1';toast('Le boss apparaît ! Trois phases t’attendent.')}}
+function startWave(){if(onlineSocket&&onlineSocket.readyState===WebSocket.OPEN){requestSharedWorld('startWave');toast('Demande de vague envoyée au groupe.');return}if(enemies.length)return;state.wave++;ui();if(state.wave%5===0){spawnEnemy(true);toast('Vague '+state.wave+' : prépare-toi au boss !')}else{for(let i=0;i<Math.min(2+state.wave,7);i++)spawnEnemy(false);toast('Vague '+state.wave+' : les ennemis arrivent !')}}
+function killEnemy(e){scene.remove(e.g);enemies=enemies.filter(x=>x!==e);if(e.boss){state.boss=false;state.unique++;state.gold+=180;state.souls+=80;document.getElementById('bossbar').style.display='none';toast('Boss vaincu ! Sceau abyssal obtenu : '+regionNames[currentRegion]+'.')}else{state.gold+=12+state.wave*2;state.souls+=5+Math.floor(state.wave/2);recordQuestKill()}ui();saveGame();if(!enemies.length){if(state.wave%5===0)toast('Donjon terminé ! Le portail se rouvre.');else toast('Vague terminée ! Prépare-toi à la suivante.')}}
+function attack(){if(state.attackCd>0)return;state.attackCd=.55;anim.attack=1;const forward=new THREE.Vector3(Math.sin(player.rotation.y),0,-Math.cos(player.rotation.y));
+ let target=enemies.map(e=>({e,delta:e.g.position.clone().sub(player.position),dist:e.g.position.distanceTo(player.position)}))
+ .filter(x=>x.dist<=8&&x.delta.clone().normalize().dot(forward)>.05)
+ .sort((a,b)=>a.dist-b.dist)[0]?.e;
+ if(!target){toast('Aucun ennemi devant toi : tourne-toi vers lui !');return}
+ if(onlineSocket&&onlineSocket.readyState===WebSocket.OPEN){requestSharedWorld('attack',{x:player.position.x,z:player.position.z,rot:player.rotation.y,damage:state.damage+state.rebirth*4});return}
+ target.hp-=state.damage+state.rebirth*4;hitFx(target.g.position);if(target.hp<=0)killEnemy(target);else toast('Coup porté : '+Math.round(state.damage)+' dégâts');
+ if(onlineSocket&&onlineSocket.readyState===WebSocket.OPEN)onlineSocket.send(JSON.stringify({type:'combat',action:'attack',x:player.position.x,z:player.position.z,rot:player.rotation.y,damage:state.damage+state.rebirth*4}));
+}
+function hitFx(pos){let m=new THREE.Mesh(new THREE.SphereGeometry(.22,8,8),new THREE.MeshBasicMaterial({color:0xffd36a}));m.position.copy(pos);m.position.y+=1;scene.add(m);setTimeout(()=>scene.remove(m),140)}
+function createSpellBurst(){
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(.35,.055,8,32),new THREE.MeshBasicMaterial({color:0x65ff91,transparent:true,opacity:.95}));ring.rotation.x=Math.PI/2;ring.position.copy(player.position);ring.position.y=.12;scene.add(ring);effects.push({mesh:ring,life:.75,max:.75,kind:'ring'});
+ for(let i=0;i<18;i++){const a=i*Math.PI*2/18;const orb=new THREE.Mesh(new THREE.SphereGeometry(.075,7,6),new THREE.MeshBasicMaterial({color:i%2?0x7cff9c:0xc7ffd0,transparent:true}));orb.position.set(player.position.x,1.1,player.position.z);scene.add(orb);effects.push({mesh:orb,life:.65,max:.65,kind:'spark',vx:Math.cos(a)*(2+Math.random()*2),vy:.5+Math.random()*2,vz:Math.sin(a)*(2+Math.random()*2)});}
+}
+function castSpell(){if(state.spellCd>0)return;state.spellCd=2.5;anim.cast=1;createSpellBurst();const radius=9;
+ if(onlineSocket&&onlineSocket.readyState===WebSocket.OPEN){requestSharedWorld('spell',{x:player.position.x,z:player.position.z,damage:state.spellDamage+state.spell*5});toast('Sort lancé sur le donjon partagé.');return}
+ let targets=enemies.filter(e=>e.g.position.distanceTo(player.position)<=radius);
+ if(!targets.length){toast('Aucun ennemi dans la zone du sort (9 mètres).');return}
+ for(let e of targets){e.hp-=state.spellDamage+state.spell*5;if(e.hp<=0)killEnemy(e);else hitFx(e.g.position)}
+ toast('Éclair arcanique : '+targets.length+' cible(s) touchée(s) !');
+ if(onlineSocket&&onlineSocket.readyState===WebSocket.OPEN)onlineSocket.send(JSON.stringify({type:'combat',action:'spell',x:player.position.x,z:player.position.z,rot:player.rotation.y,damage:state.spellDamage+state.spell*5}));
+}
+function hatchEgg(premium=false){const cost=premium?900:300;if(state.souls<cost)return false;state.souls-=cost;const roll=Math.random()*100;let rarity=roll<1?'Mythique':roll<6?'Légendaire':roll<18?'Épique':roll<45?'Rare':'Commune';let pool=petTypes.filter(t=>t.rarity===rarity);if(!pool.length)pool=petTypes.filter(t=>t.rarity==='Commune');const got=pool[Math.floor(Math.random()*pool.length)];if(state.unlockedPets.includes(got.id)){const refund=got.rarity==='Mythique'?500:got.rarity==='Légendaire'?250:got.rarity==='Épique'?120:got.rarity==='Rare'?60:25;state.souls+=refund;toast('Doublon : '+got.name+' • compensation de '+refund+' âmes');}else{state.unlockedPets.push(got.id);setPet(got.id);toast('Nouvelle créature obtenue : '+got.name+' ('+got.rarity+') !');}return true}
+
+// Cartes distinctes par biome : sol, brouillard, architecture et décor dédiés.
+const regionNames=['Forêt des Murmures','Nécropole Gelée','Marais des Esprits','Citadelle des Cendres','Sanctuaire du Boss'];
+const regionLooks=[
+ {floor:0x1b3028,fog:0x172b27,wall:0x263a30,glow:0x65d9a1},
+ {floor:0x253247,fog:0x18263a,wall:0x45566b,glow:0x7aa7ff},
+ {floor:0x30253a,fog:0x292039,wall:0x49334f,glow:0xc06cff},
+ {floor:0x39271f,fog:0x35251e,wall:0x594033,glow:0xff9a56},
+ {floor:0x251d2b,fog:0x211923,wall:0x493044,glow:0xff526b}
+];
+const activeRegionGroup=new THREE.Group();scene.add(activeRegionGroup);
+let currentRegion=0;
+function clearRegionGroup(){
+ while(activeRegionGroup.children.length){
+  const obj=activeRegionGroup.children[0];activeRegionGroup.remove(obj);
+  obj.traverse(n=>{if(n.geometry)n.geometry.dispose();if(n.material){if(Array.isArray(n.material))n.material.forEach(m=>m.dispose());else n.material.dispose();}});
+ }
+}
+function regionBlock(x,y,z,sx,sy,sz,color,emissive=0){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),new THREE.MeshStandardMaterial({color,roughness:.88,emissive,emissiveIntensity:.6}));
+ m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;activeRegionGroup.add(m);return m;
+}
+function regionCrystal(x,z,color){
+ const g=new THREE.Group(),c=new THREE.Mesh(new THREE.OctahedronGeometry(.5),new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:1.3}));
+ c.position.y=.9;c.scale.y=1.8;g.add(c);const l=new THREE.PointLight(color,1.6,7);l.position.y=1.2;g.add(l);g.position.set(x,0,z);activeRegionGroup.add(g);
+ regionDecor.push({g,ring:c,glow:l,phase:Math.random()*6});
+}
+function buildRegionMap(id){
+ clearRegionGroup();const look=regionLooks[id];floor.material.color.setHex(look.floor);scene.background.setHex(look.fog);scene.fog.color.setHex(look.fog);
+ // Murs bas et colonnes : limites visibles, sans pièges ni obstacles dangereux.
+ for(let x=-15;x<=15;x+=5){regionBlock(x,1.2,-19,.65,2.4,.65,look.wall);regionBlock(x,1.2,15,.65,2.4,.65,look.wall);}
+ for(let z=-15;z<=15;z+=5){regionBlock(-17,1.2,z,.65,2.4,.65,look.wall);regionBlock(17,1.2,z,.65,2.4,.65,look.wall);}
+ regionBlock(-2,2,-16,.55,4,.65,look.wall);regionBlock(2,2,-16,.55,4,.65,look.wall);regionBlock(0,4,-16,4.5,.55,.75,look.wall,look.glow);
+ regionBlock(0,.25,0,4,.5,4,look.wall,look.glow);
+ for(let i=0;i<8;i++){const x=-13+(i%4)*8.5,z=-12+Math.floor(i/4)*23;
+  if(id===0){regionBlock(x,1.7,z,.55,3.4,.55,0x292b2c);for(let b=0;b<3;b++){const br=regionBlock(x+(b-1)*.8,2.5+b*.25,z,.22,1.7,.22,0x34302e);br.rotation.z=(b-1)*.65;}regionCrystal(x+1.2,z+1,look.glow);}
+  else if(id===1){regionBlock(x,.7,z,1.3,1.4,.8,0x667b91);regionCrystal(x+1,z+1,look.glow);}
+  else if(id===2){regionBlock(x,.35,z,2.1,.7,1.5,0x40304b,0x542d70);regionCrystal(x+1,z+1,look.glow);}
+  else if(id===3){regionBlock(x,1.2,z,1.5,2.4,1.5,0x5a3b2d);regionCrystal(x+1,z+1,look.glow);}
+  else {regionBlock(x,2.4,z,.9,4.8,.9,0x493044,0x7b244c);regionCrystal(x+1,z+1,look.glow);}
+ }
+ for(let i=0;i<12;i++){const a=i/12*Math.PI*2,t=regionBlock(Math.cos(a)*6,.06,Math.sin(a)*6,1.25,.12,1.25,0x51505a,look.glow);t.rotation.y=a;}
+}
+function travelRegion(id){
+ currentRegion=id;buildRegionMap(id);requestSharedWorld('changeRegion',{region:id});
+ for(const e of enemies)scene.remove(e.g);enemies=[];state.boss=false;
+ document.getElementById('bossbar').style.display='none';
+ player.position.set(0,0,7);camera.position.set(0,10,16);
+ document.getElementById('hint').textContent=regionNames[id]+' • Carte indépendante • Explore sans pièges et lance les vagues depuis le menu Donjon.';
+ closePanel();toast('Bienvenue dans : '+regionNames[id]+' !');
+}
+
+if(hadSave){buildRegionMap(currentRegion);toast('Sauvegarde chargée automatiquement.');}
+
+function openPanel(which){let title='',desc='',cards=[];const add=(name,detail,cost,fn)=>cards.push({name,detail,cost,fn});if(which==='main'){title='☰ Menu principal';desc='Choisis une rubrique du jeu.';for(const [key,label,detail] of [['creatures','🐾 Créatures','Collection et améliorations'],['eggs','🥚 Œufs','Obtenir de nouvelles créatures'],['character','🛡️ Personnage','Améliorer ton personnage'],['spells','✨ Sorts','Gérer tes sorts'],['zones','🗺️ Zones','Découvrir les régions du royaume'],['quests','📜 Quêtes','Objectifs et récompenses des cinq régions'],['dungeon','🚪 Donjon','Entrer dans les vagues et affronter les boss'],['rebirth','💎 Rebirth','Bonus permanents'],['controls','⌨️ Commandes','Personnaliser les touches'],['save','💾 Sauvegarde','Enregistrer ta progression'],['online','🌐 Multijoueur','État du mode en ligne']])cards.push({name:label,detail,cost:0,go:key,fn:()=>false});}if(which==='save'){title='💾 Sauvegarde';desc='La progression est enregistrée automatiquement sur cet appareil. Tu peux aussi lancer une sauvegarde manuelle.';add('Sauvegarder maintenant','Niveaux, or, âmes, créatures, région, quêtes et commandes.',0,()=>saveGame(true));}
+if(which==='online'){title='🌐 Multijoueur';desc='Le client multijoueur est maintenant intégré. Pour jouer ensemble, il faut démarrer le serveur fourni puis saisir son adresse ws:// ou wss:// ici. Les joueurs connectés dans la même région se voient.';add('Mode en ligne','Présence et positions des joueurs synchronisées. Les combats, créatures, inventaires et sauvegardes ne sont pas encore synchronisés.',0,()=>false);}
+if(which==='zones'){title='🗺️ Les régions oubliées';desc='Cinq régions à découvrir. Chacune possède son ambiance, ses ennemis et ses récompenses. Aucun piège.';const regions=[['Forêt des Murmures','Forêt hantée • ennemis rapides',0],['Nécropole Gelée','Ruines glacées • gardiens résistants',1],['Marais des Esprits','Brumes violettes • spectres',2],['Citadelle des Cendres','Forteresse brûlante • ennemis puissants',3],['Sanctuaire du Boss','Arène finale • boss en trois phases',4]];for(const [n,d,id] of regions)add(n,d,0,()=>{travelRegion(id);return true});}if(which==='quests'){title='📜 Quêtes des régions';desc='Élimine les monstres dans chaque région, puis réclame ta récompense quand l’objectif est atteint.';for(let i=0;i<regionNames.length;i++){const q=regionQuests[i];add(regionNames[i],(i===currentRegion?'Région actuelle • ':'')+questStatus(i)+' • Récompense : '+q.rewardGold+' or et '+q.rewardSouls+' âmes',0,()=>{if(q.claimed||q.progress<q.goal)return false;q.claimed=true;state.gold+=q.rewardGold;state.souls+=q.rewardSouls;toast('Récompense récupérée : '+q.rewardGold+' or et '+q.rewardSouls+' âmes !');saveGame();return true})}}if(which==='controls'){title='⌨️ Personnaliser les commandes';desc='Choisis une action puis appuie sur la touche que tu veux utiliser. Les changements s’appliquent immédiatement.';const names={up:'Avancer',down:'Reculer',left:'Aller à gauche',right:'Aller à droite'};for(const k of Object.keys(keybinds)){const label=keybinds[k].replace('Arrow','Flèche ');add(names[k],'Touche actuelle : '+label,0,()=>{waitingBind=k;toast('Appuie sur une touche pour : '+names[k]);return true})}add('Attaquer','Clic gauche de la souris',0,()=>false);add('Lancer un sort','Clic droit de la souris',0,()=>false);}if(which==='eggs'){title='🥚 Couvoir des âmes';desc='Ouvre des œufs pour obtenir une créature permanente. Les chances sont affichées avant chaque achat. Les doublons donnent une compensation en âmes.';add('Œuf hanté','300 âmes • Commune 55% • Rare 27% • Épique 12% • Légendaire 5% • Mythique 1%',300,()=>hatchEgg(false));add('Œuf abyssal','900 âmes • Même probabilités, mais compensation plus élevée en cas de doublon.',900,()=>hatchEgg(true));}if(which==='creatures'){title='🐾 Sanctuaire des créatures';desc='Tes compagnons sont permanents. Débloque des espèces, choisis ton compagnon actif et fais-le évoluer avec les âmes.';for(const t of petTypes){const unlocked=state.unlockedPets.includes(t.id);add((unlocked?(state.selectedPet===t.id?'✓ Actif : ':'Choisir : '):'Débloquer : ')+t.name,'['+t.rarity+'] '+t.desc+(unlocked?' • Dégâts x'+t.damage:' • Coût : '+t.cost+' âmes'),unlocked?0:t.cost,()=>{if(unlocked){setPet(t.id);return true}if(state.souls<t.cost)return false;state.souls-=t.cost;state.unlockedPets.push(t.id);setPet(t.id);return true})}add('Entraînement des créatures','Niveau '+state.petLevel+' • Dégâts de base : '+state.petDamage,20*state.petLevel,()=>{if(state.souls<20*state.petLevel)return false;state.souls-=20*state.petLevel;state.petLevel++;state.petDamage+=3;return true});add('Évolution spectrale','Au niveau 5, ton compagnon gagne une aura et devient plus grand. Évolution actuelle : '+(state.petEvo?'Éveillé':'Verrouillée'),state.petEvo?0:100,()=>{if(state.petEvo)return false;if(state.petLevel<5||state.souls<100)return false;state.souls-=100;state.petEvo=1;applyPetEvolution();return true})}if(which==='character'){title='🛡️ Amélioration du personnage';desc='Utilise tes pièces d’or pour devenir plus puissant.';add('Entraînement','Augmente tes dégâts de 5.',40*state.level,()=>{if(state.gold<40*state.level)return false;state.gold-=40*state.level;state.damage+=5;state.level++;return true});add('Vitalité','Augmente tes PV maximum de 20 et te soigne.',35*state.level,()=>{if(state.gold<35*state.level)return false;state.gold-=35*state.level;state.maxHp+=20;state.hp=state.maxHp;return true})}if(which==='spells'){title='✨ Grimoire des sorts';desc='Améliore ton éclair arcanique.';add('Puissance arcanique','Dégâts du sort : '+state.spellDamage,30*state.spell,()=>{if(state.gold<30*state.spell)return false;state.gold-=30*state.spell;state.spell++;state.spellDamage+=12;return true});add('Récupération rapide','Réduit le temps de recharge du sort (prototype).',80,()=>{if(state.gold<80)return false;state.gold-=80;state.spellDamage+=8;return true})}if(which==='dungeon'){title='🚪 Donjon des Abysses';desc='Explore plusieurs régions, puis traverse les salles du donjon et affronte un boss en trois phases. Aucun piège.';add('Entrer / continuer','Lance la prochaine vague dans le donjon.',0,()=>{if(enemies.length)return false;startWave();return true});add('Sortir du donjon','Retour à la zone de départ (les ennemis restants disparaissent).',0,()=>{enemies.forEach(e=>scene.remove(e.g));enemies=[];state.boss=false;document.getElementById('bossbar').style.display='none';return true})}if(which==='rebirth'){title='💎 Ascension / Rebirth';desc='La quête finale du boss donne un Sceau abyssal. Le rebirth consomme 1 sceau et réinitialise ton niveau et tes améliorations contre des bonus permanents.';add('Effectuer le rebirth','Sceaux disponibles : '+state.unique+' • Bonus actuels : '+state.rebirth,1,()=>{if(state.unique<1)return false;state.unique--;state.rebirth++;state.level=1;state.gold=0;state.damage=12+state.rebirth*4;state.maxHp=100+state.rebirth*20;state.hp=state.maxHp;state.wave=0;state.petLevel=1;state.petDamage=6+state.rebirth*2;state.petEvo=0;state.petEvo=0;applyPetEvolution();state.spell=1;state.spellDamage=18+state.rebirth*5;return true})}
+ document.getElementById('modalTitle').textContent=title;document.getElementById('modalDesc').textContent=desc;let root=document.getElementById('cards');root.innerHTML='';for(let c of cards){let d=document.createElement('div');d.className='card';let b=document.createElement('b');b.textContent=c.name;let s=document.createElement('small');s.textContent=c.detail;let btn=document.createElement('button');btn.textContent=which==='quests'?(regionQuests[cards.indexOf(c)]?.claimed?'Terminée':(regionQuests[cards.indexOf(c)]?.progress>=regionQuests[cards.indexOf(c)]?.goal?'Réclamer':'Consulter')):(c.cost?'Acheter • '+c.cost+(which==='creatures'?' âmes':' or'):'Activer');btn.onclick=()=>{if(which==='main'&&c.go){openPanel(c.go);return}let ok=c.fn();if(ok){if(which==='controls'&&waitingBind){document.getElementById('modalDesc').textContent='En attente : appuie maintenant sur la nouvelle touche…';return}toast('Amélioration effectuée !');ui();openPanel(which)}else toast(which==='rebirth'?'Il te faut un Sceau abyssal !':'Ressources insuffisantes ou action indisponible.');};d.append(b,s,btn);root.append(d)}document.getElementById('modal').style.display='block'}
+window.openPanel=openPanel;window.castSpell=castSpell;window.closePanel=()=>document.getElementById('modal').style.display='none';
+function update(dt){state.attackCd=Math.max(0,state.attackCd-dt);state.spellCd=Math.max(0,(state.spellCd||0)-dt);state.enemyCd-=dt;anim.attack=Math.max(0,anim.attack-dt*3.8);anim.cast=Math.max(0,anim.cast-dt*2.2);let dx=0,dz=0;if(keys[keybinds.up]||keys.up)dz-=1;if(keys[keybinds.down]||keys.down)dz+=1;if(keys[keybinds.left]||keys.left)dx-=1;if(keys[keybinds.right]||keys.right)dx+=1;let len=Math.hypot(dx,dz)||1;player.position.x+=dx/len*5*dt;player.position.z+=dz/len*5*dt;player.position.x=THREE.MathUtils.clamp(player.position.x,-16,16);player.position.z=THREE.MathUtils.clamp(player.position.z,-20,14);const moving=(Math.abs(dx)+Math.abs(dz))>0;anim.walk+=(moving?dt*10:dt*2);const stride=moving?Math.sin(anim.walk):0;player.position.y=moving?Math.abs(Math.sin(anim.walk*2))*.075:0;player.rotation.y=moving?Math.atan2(dx,-dz):player.rotation.y;robe.rotation.z=stride*.035;chest.rotation.z=stride*.025;hood.rotation.z=stride*.018;for(const arm of sleeves){arm.mesh.rotation.x=stride*arm.side*.22-anim.attack*.75*(arm.side===1?1:-.35)-anim.cast*.45;arm.mesh.rotation.z=arm.side*.65+stride*arm.side*.12;}staff.rotation.z=-.12-anim.attack*1.15+anim.cast*.35;staff.rotation.x=anim.cast*.25;pet.position.lerp(new THREE.Vector3(player.position.x-1.2,.1,player.position.z+1),Math.min(1,dt*4));pet.position.y=.15+Math.sin(performance.now()*.004)*.12;const pp=pet.userData.parts;pet.userData.animTime+=dt;const pt=pet.userData.animTime;const petMoving=moving;if(pet.userData.type==='raven'){pet.rotation.z=Math.sin(pt*12)*.13;pp.wings.forEach((w,i)=>w.mesh.rotation.z=w.side*(-1.05+Math.sin(pt*15+i)*.38));}else if(pet.userData.type==='hound'){pet.rotation.y=Math.sin(pt*2)*.08;pp.legs.forEach((l,i)=>l.mesh.rotation.x=petMoving?Math.sin(pt*11+(i%2)*Math.PI)*.55:Math.sin(pt*2+i)*.04);pp.tail.rotation.x=-1.1+Math.sin(pt*5)*.18;}else{pet.rotation.y=Math.sin(pt*1.7)*.18;pp.rings.forEach((r,i)=>r.rotation.z=pt*(i%2?-.8:.8));pp.core.scale.y=1.2+Math.sin(pt*4)*.08;}if(pet.userData.evoAura)pet.userData.evoAura.rotation.z=pt*1.8;pet.userData.attackPulse=Math.max(0,pet.userData.attackPulse-dt);if(pet.userData.attackPulse>0){pet.scale.setScalar((state.petEvo?1.35:1)*(1+pet.userData.attackPulse*.65));}else pet.scale.setScalar(state.petEvo?1.35:1);for(const sp of spirits){const a=performance.now()*.00055+sp.userData.angle;sp.position.set(Math.cos(a)*sp.userData.radius,sp.userData.height+Math.sin(a*1.7)*.16,Math.sin(a)*.62-.1)}for(const fx of [...effects]){fx.life-=dt;const fade=Math.max(0,fx.life/fx.max);if(fx.kind==='ring'){fx.mesh.scale.setScalar(1+(1-fade)*8);fx.mesh.material.opacity=fade;}else{fx.mesh.position.x+=fx.vx*dt;fx.mesh.position.y+=fx.vy*dt;fx.mesh.position.z+=fx.vz*dt;fx.mesh.material.opacity=fade;}if(fx.life<=0){scene.remove(fx.mesh);effects.splice(effects.indexOf(fx),1)}}camera.position.x+=(player.position.x*.35-camera.position.x)*dt*2;camera.position.z+=(player.position.z+10-camera.position.z)*dt*2;camera.lookAt(player.position.x,0,player.position.z-2);
+ for(let e of [...enemies]){let dir=new THREE.Vector3(player.position.x-e.g.position.x,0,player.position.z-e.g.position.z);let dist=dir.length();if(dist>1.35){dir.normalize();e.g.position.addScaledVector(dir,e.spd*dt)}else if(state.enemyCd<=0){state.hp-=e.boss?13:7;state.hp=Math.max(0,state.hp);state.enemyCd=.8;ui();if(state.hp<=0){state.hp=state.maxHp;state.gold=Math.max(0,state.gold-30);player.position.set(0,0,4);toast('Tu as été vaincu ! Retour au spawn, 30 pièces perdues.');ui()}}e.g.rotation.y+=dt*.7;}
+ if(enemies.length&&state.petDamage>0){state.petCd=(state.petCd||0)-dt;if(state.petCd<=0){let t=enemies.reduce((a,b)=>a.g.position.distanceTo(pet.position)<b.g.position.distanceTo(pet.position)?a:b);let kind=state.selectedPet;let multiplier=petTypes.find(x=>x.id===kind).damage;t.hp-=state.petDamage*multiplier*(state.petEvo?1.25:1);state.petCd=kind==='hound'?.85:kind==='raven'?1.25:1.1;pet.userData.attackPulse=.32;pet.rotation.x=kind==='hound'?.35:0;if(kind==='raven'){pp.wings.forEach(w=>w.mesh.rotation.x=w.side*.7)}hitFx(t.g.position);if(t.hp<=0)killEnemy(t)}}if(state.boss){let b=enemies.find(e=>e.boss);if(b){const ratio=b.hp/b.max;document.getElementById('bossfill').style.width=Math.max(0,ratio*100)+'%';const phase=ratio>.66?1:ratio>.33?2:3;const phaseNames=['','PHASE I • ÉVEIL','PHASE II • FUREUR','PHASE III • APOCALYPSE'];const phaseEl=document.getElementById('bossphase');if(phaseEl&&phaseEl.dataset.phase!==String(phase)){phaseEl.dataset.phase=String(phase);phaseEl.textContent=phaseNames[phase];b.spd=phase===1?1.15:phase===2?1.55:1.95;toast(phase===2?'Le boss entre en FUREUR !':'Le boss libère son pouvoir ultime !');}}} }
+let saveClock=0;
+function loop(t){let dt=Math.min((t-last)/1000,.04);last=t;update(dt);updateMultiplayer(dt);saveClock+=dt;if(saveClock>=8){saveGame();if(onlineAuthenticated)requestSharedWorld('saveProgress',{save:collectSaveData()});saveClock=0;}const time=t*.001;for(const r of regionDecor){r.ring.rotation.z+=dt*.55;r.glow.intensity=1.7+Math.sin(time*2+r.phase)*.55;r.g.position.y=Math.sin(time*1.3+r.phase)*.06;}for(const d of dungeonDecor){if(d.ring){if(d.flat)d.ring.rotation.z+=dt*.18;else d.ring.rotation.z=Math.sin(time+d.phase)*.12}if(d.torch){d.flame.scale.y=.8+Math.sin(time*8+d.phase)*.3;d.light.intensity=1.1+Math.sin(time*7+d.phase)*.35}}for(const d of decor){if(d.type==='crystal'){d.g.rotation.y+=dt*.45;d.g.position.y=.05+Math.sin(time*1.8+d.phase)*.07}else if(d.type==='tree'){d.g.rotation.z=Math.sin(time*.45+d.phase)*.012}}for(const f of motes){f.m.position.y+=Math.sin(time*1.2+f.phase)*dt*f.speed;f.m.position.x+=Math.cos(time*.5+f.phase)*dt*.12;if(f.m.position.y>4.8)f.m.position.y=.25}moonGlow.intensity=1.8+Math.sin(time*.7)*.25;renderer.render(scene,camera);requestAnimationFrame(loop)}requestAnimationFrame(loop);
+window.addEventListener('beforeunload',()=>saveGame());
+window.addEventListener('pagehide',()=>saveGame());
+window.addEventListener('keydown',e=>{if(waitingBind){e.preventDefault();const action=waitingBind;const conflict=Object.keys(keybinds).find(k=>k!==action&&keybinds[k]===e.code);if(conflict){toast('Cette touche est déjà utilisée. Choisis-en une autre.');return}keybinds[action]=e.code;waitingBind=null;openPanel('controls');toast('Commande enregistrée !');return}keys[e.code]=true;});window.addEventListener('keyup',e=>keys[e.code]=false);renderer.domElement.addEventListener('pointerdown',e=>{if(e.button===0){e.preventDefault();attack()}else if(e.button===2){e.preventDefault();castSpell()}else if(e.button===1){e.preventDefault();openPanel('main')}});renderer.domElement.addEventListener('auxclick',e=>{if(e.button===1){e.preventDefault();openPanel('main')}});renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());document.querySelectorAll('#mobile button').forEach(b=>{let k=b.dataset.move;const stop=()=>{keys[k]=false};b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true;b.setPointerCapture?.(e.pointerId)});['pointerup','pointerleave','pointercancel','lostpointercapture'].forEach(ev=>b.addEventListener(ev,stop));});function bindTouchAction(id,fn){const el=document.getElementById(id);if(!el)return;el.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();fn();});el.addEventListener('contextmenu',e=>e.preventDefault());}bindTouchAction('touchAttack',attack);bindTouchAction('touchSpell',castSpell);bindTouchAction('touchMenu',()=>openPanel('main'));document.getElementById('game').addEventListener('contextmenu',e=>e.preventDefault());window.addEventListener('blur',()=>{Object.keys(keys).forEach(k=>keys[k]=false)});window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});ui();toast('Bienvenue dans La Vallée des Morts ! Ouvre le menu Donjon pour commencer.');
+</script></body></html>
